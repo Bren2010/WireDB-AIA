@@ -10,13 +10,22 @@
 var koa = require('koa')
 var config = require('config')
 var bencode = require('bencode')
-var caesar = require('caesar')
+var crypto = require('crypto')
+var caesar = {
+    kts: require('./caesar/kts'),
+    tree: require('./caesar/tree')
+}
+var sjcl = require('./sjcl')
 
 var users = require('./users.' + config.database + '.js')
 var time = require('./time.' + config.database + '.js')
 
 // Load middleware.
 var logger = require('koa-logger')
+
+// Parse secret key.
+var c = sjcl.ecc.curves.c256
+var secKey = new sjcl.ecc.ecdsa.secretKey(c, new sjcl.bn(config.key.sec))
 
 // Setup
 var app = koa()
@@ -29,10 +38,39 @@ app.use(function *(next) {
 
     // Generate the trustee's secret key.
 
-    // Find their set of attributes.
-    attrs = yield users.getAttributes
+    // 1.0.  Find their set of attributes.
+    var attrs = yield users.getAttributes()
 
-    this.body = bencode.encode(attrs)
+    // 1.1.  Make sure attrs.length isn't a power of two.
+    var c = Math.pow(2, Math.ceil(Math.log(attrs.length) / Math.log(2)))
+    c = c - attrs.length // Stolen from caesar.tree
+
+    if (c === 0) { attrs.push('0000000000') }
+
+    // 1.2.  Create tree.
+    var tmp = Object.create(attrs)
+    var tree = new caesar.tree.Committer(tmp, 'sha1')
+
+    // 2.  Choose random value.
+    var seed = crypto.randomBytes(20).toString('hex')
+
+    // 3.  Calculate the public key of the random private key.
+    var signer = new caesar.kts.Signer(1, seed)
+
+    // 4.0.  Add pubKey to set of values to commit to.
+    tree.vals[tree.vals.length - 1] = signer.getPublicKey()
+
+    // 4.1.  Compute head.
+    var head = tree.getCommit()
+
+    // 5.  Compute signature.
+    var sig = sjcl.codec.base64.fromBits(secKey.sign(sjcl.codec.hex.toBits(head)))
+    
+    this.body = bencode.encode({
+        attrs: attrs,
+        seed: seed,
+        sig: sig
+    })
 })
 
 // Start tracker.

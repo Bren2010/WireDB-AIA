@@ -10,12 +10,12 @@ module.db = {}
 * Authentication middleware.
 */
 module.exports.auth = function *(next) {
-
+    yield next
 }
 
 /**
 * Attribute-fetching middleware.
 */
-module.exports.getAttributes = function *(next) {
-    return ['hello', 'goodbye', 'balls']
+module.exports.getAttributes = function () {
+    return Q(['hello', 'goodbye', 'balls'])
 }
