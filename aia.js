@@ -18,13 +18,12 @@ var caesar = {
 var sjcl = require('./sjcl')
 
 var users = require('./users.' + config.database + '.js')
-var time = require('./time.' + config.database + '.js')
 
 // Load middleware.
 var logger = require('koa-logger')
 
 // Parse secret key.
-var c = sjcl.ecc.curves.c256
+var c = sjcl.ecc.curves[config.key.curve]
 var secKey = new sjcl.ecc.ecdsa.secretKey(c, new sjcl.bn(config.key.sec))
 
 // Setup
@@ -38,17 +37,14 @@ app.use(function *(next) {
 
     // Generate the trustee's secret key.
 
-    // 1.0.  Find their set of attributes.
-    var attrs = yield users.getAttributes()
+    // 1.0.  Make sure attrs.length isn't a power of two.
+    var tmp = Object.create(this.attrs)
+    var c = Math.pow(2, Math.ceil(Math.log(tmp.length) / Math.log(2)))
+    c = c - tmp.length // Stolen from caesar.tree
 
-    // 1.1.  Make sure attrs.length isn't a power of two.
-    var c = Math.pow(2, Math.ceil(Math.log(attrs.length) / Math.log(2)))
-    c = c - attrs.length // Stolen from caesar.tree
+    if (c === 0) { tmp.push('0000000000') }
 
-    if (c === 0) { attrs.push('0000000000') }
-
-    // 1.2.  Create tree.
-    var tmp = Object.create(attrs)
+    // 1.1.  Create tree.
     var tree = new caesar.tree.Committer(tmp, 'sha1')
 
     // 2.  Choose random value.
@@ -64,10 +60,12 @@ app.use(function *(next) {
     var head = tree.getCommit()
 
     // 5.  Compute signature.
-    var sig = sjcl.codec.base64.fromBits(secKey.sign(sjcl.codec.hex.toBits(head)))
-    
+    var sig = sjcl.codec.base64.fromBits(
+        secKey.sign(sjcl.codec.hex.toBits(head))
+    )
+
     this.body = bencode.encode({
-        attrs: attrs,
+        attrs: this.attrs,
         seed: seed,
         sig: sig
     })

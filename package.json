@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "NODE_PATH=lib node --harmony aia.js"
+    "start": "node --harmony aia.js",
+    "test": "NODE_ENV=default mocha -R spec"
   },
   "dependencies": {
     "koa": "*",
@@ -11,7 +12,6 @@
     "koa-route": "*",
     "config": "*",
     "q": "*",
-    "mocha": "*",
     "bencode": "*",
     "sha1": "*"
   }
