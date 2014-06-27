@@ -22,8 +22,10 @@ describe('Authentication', function() {
             res.on('end', function() {
                 try {
                     var obj = bencode.decode(buff, 'utf8')
+                    var t = obj.attrs.pop()
 
                     assert.deepEqual(obj.attrs, attrs)
+                    assert.equal(t, 'time=' + Math.floor(Date.now() / 1000))
 
                     done()
                 } catch (err) {
@@ -47,8 +49,10 @@ describe('Authentication', function() {
             res.on('end', function() {
                 try {
                     var obj = bencode.decode(buff, 'utf8')
+                    var t = obj.attrs.pop()
 
                     assert.deepEqual(obj.attrs, attrs)
+                    assert.equal(t, 'time=' + Math.floor(Date.now() / 1000))
 
                     done()
                 } catch (err) {

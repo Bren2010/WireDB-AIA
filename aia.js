@@ -17,6 +17,7 @@ var caesar = {
 }
 var sjcl = require('./sjcl')
 
+var time = require('./time.' + config.database + '.js')
 var users = require('./users.' + config.database + '.js')
 
 // Load middleware.
@@ -35,6 +36,17 @@ app.use(users.auth)
 app.use(function *(next) {
     this.set('Content-Type', 'text/plain')
 
+    // Add the current time to the trustee's attributes.
+    var now = yield time.now()
+
+    if (now instanceof Array) {
+        for (var i = 0; i < now.length; ++i) {
+            this.attrs.push('time.' + i.toString() + '=' + now[i].toString())
+        }
+    } else {
+        this.attrs.push('time=' + now.toString())
+    }
+    
     // Generate the trustee's secret key.
 
     // 1.0.  Make sure attrs.length isn't a power of two.

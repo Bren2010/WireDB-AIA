@@ -24,7 +24,7 @@ module.exports.auth = function *(next) {
     }
 
     if (ok === 1) {
-        this.attrs = module.db[query.chall]
+        this.attrs = Object.create(module.db[query.chall])
         yield next;
     } else {
         this.body = 'Permission denied.'
