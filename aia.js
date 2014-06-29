@@ -6,6 +6,7 @@
 // 1.  This should be behind a TLS tunnel.
 // 2.  User certificates are the preferred form of authentication.  The TLS
 //     tunnel can pass them along as HTTP headers over a secure network.
+// 3.  Proof-of-works will be used later to mitigate DDOS's or hoarding.
 
 var koa = require('koa')
 var config = require('config')
