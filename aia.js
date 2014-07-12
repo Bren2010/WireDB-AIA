@@ -47,7 +47,16 @@ app.use(function *(next) {
     } else {
         this.attrs.push('time=' + now.toString())
     }
-    
+
+    // Add a random nonce to each of the trustee's attributes.
+    var i = 0,
+        len = this.attrs.length
+
+    for (i = 0; i < len; i++) {
+        var nonce = crypto.randomBytes(16).toString('hex')
+        this.attrs[i] = nonce + ',' + this.attrs[i]
+    }
+
     // Generate the trustee's secret key.
 
     // 1.0.  Make sure attrs.length isn't a power of two.
@@ -55,7 +64,7 @@ app.use(function *(next) {
     var c = Math.pow(2, Math.ceil(Math.log(tmp.length) / Math.log(2)))
     c = c - tmp.length // Stolen from caesar.tree
 
-    if (c === 0) { tmp.push('0000000000') }
+    if (c === 0) { tmp.push('0') }
 
     // 1.1.  Create tree.
     var tree = new caesar.tree.Committer(tmp, 'sha1')

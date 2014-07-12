@@ -30,9 +30,19 @@ describe('Authentication', function() {
             try {
                 var obj = bencode.decode(res, 'utf8')
                 var t = obj.attrs.pop()
+                var u = t.substr(t.indexOf(',') + 1)
 
-                assert.deepEqual(obj.attrs, attrs)
-                assert.equal(t, 'time=' + Math.floor(Date.now() / 1000))
+                assert.equal(u, 'time=' + Math.floor(Date.now() / 1000))
+
+                var i = 0,
+                    len = obj.attrs.length
+
+                for (i = 0; i < len; i++) {
+                    var comma = obj.attrs[i].indexOf(',')
+                    var attr = obj.attrs[i].substr(comma + 1)
+
+                    assert.deepEqual(attr, attrs[i])
+                }
 
                 done()
             } catch (err) {
@@ -49,9 +59,19 @@ describe('Authentication', function() {
             try {
                 var obj = bencode.decode(res, 'utf8')
                 var t = obj.attrs.pop()
+                var u = t.substr(t.indexOf(',') + 1)
 
-                assert.deepEqual(obj.attrs, attrs)
-                assert.equal(t, 'time=' + Math.floor(Date.now() / 1000))
+                assert.equal(u, 'time=' + Math.floor(Date.now() / 1000))
+
+                var i = 0,
+                    len = obj.attrs.length
+
+                for (i = 0; i < len; i++) {
+                    var comma = obj.attrs[i].indexOf(',')
+                    var attr = obj.attrs[i].substr(comma + 1)
+
+                    assert.deepEqual(attr, attrs[i])
+                }
 
                 done()
             } catch (err) {

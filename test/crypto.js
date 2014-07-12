@@ -36,7 +36,7 @@ it('Verifying cryptography', function (done) {
         var c = Math.pow(2, Math.ceil(Math.log(obj.attrs.length) / Math.log(2)))
         c = c - obj.attrs.length
 
-        if (c === 0) { obj.attrs.push('0000000000') }
+        if (c === 0) { obj.attrs.push('0') }
 
         var tree = new caesar.tree.Committer(obj.attrs, 'sha1')
         var signer = new caesar.kts.Signer(1, obj.seed)
